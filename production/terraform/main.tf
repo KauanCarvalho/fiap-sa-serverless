@@ -61,6 +61,35 @@ resource "aws_api_gateway_integration" "lambda_integration" {
   uri                     = "arn:aws:apigateway:${var.region}:lambda:path/2015-03-31/functions/${aws_lambda_function.payment_webhook_lambda.arn}/invocations"
 }
 
+resource "aws_iam_policy" "lambda_sqs_policy" {
+  name        = "lambda-sqs-policy"
+  description = "Allow Lambda to send messages to SQS"
+  policy      = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Action   = "sqs:SendMessage"
+        Effect   = "Allow"
+        Resource = aws_sqs_queue.payment_webhook_events.arn
+      }
+    ]
+  })
+}
+
+resource "aws_iam_role_policy_attachment" "lambda_role_attachment" {
+  role       = var.lab_role
+  policy_arn = aws_iam_policy.lambda_sqs_policy.arn
+}
+
+resource "aws_api_gateway_stage" "payment_api_stage" {
+  depends_on = [
+    aws_api_gateway_deployment.payment_api_deployment
+  ]
+  deployment_id = aws_api_gateway_deployment.payment_api_deployment.id
+  stage_name    = "prod"
+  rest_api_id   = aws_api_gateway_rest_api.payment_api.id
+}
+
 resource "aws_lambda_permission" "allow_api_gateway" {
   statement_id  = "AllowExecutionFromAPIGateway"
   action        = "lambda:InvokeFunction"
