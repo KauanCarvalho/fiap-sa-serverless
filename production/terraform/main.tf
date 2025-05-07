@@ -65,11 +65,11 @@ resource "aws_iam_policy" "lambda_sqs_policy" {
   name        = "lambda-sqs-policy"
   description = "Allow Lambda to send messages to SQS"
   policy      = jsonencode({
-    Version = "2012-10-17"
+    Version = "2012-10-17",
     Statement = [
       {
-        Action   = "sqs:SendMessage"
-        Effect   = "Allow"
+        Action   = "sqs:SendMessage",
+        Effect   = "Allow",
         Resource = aws_sqs_queue.payment_webhook_events.arn
       }
     ]
@@ -77,7 +77,7 @@ resource "aws_iam_policy" "lambda_sqs_policy" {
 }
 
 resource "aws_iam_role_policy_attachment" "lambda_role_attachment" {
-  role       = var.lab_role
+  role       = split("/", var.lab_role)[1]
   policy_arn = aws_iam_policy.lambda_sqs_policy.arn
 }
 
