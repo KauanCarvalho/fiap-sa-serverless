@@ -15,53 +15,18 @@ terraform {
   }
 }
 
+data "aws_iam_role" "lab_role" {
+  name = "LabRole"
+}
+
 resource "aws_sqs_queue" "payment_webhook_events" {
   name = "fiap_sa_payment_webhook_events"
-}
-
-resource "aws_iam_role" "lambda_exec_role" {
-  name = "lambda_exec_payment_webhook"
-
-  assume_role_policy = jsonencode({
-    Version = "2012-10-17",
-    Statement = [
-      {
-        Effect = "Allow",
-        Principal = {
-          Service = "lambda.amazonaws.com"
-        },
-        Action = "sts:AssumeRole"
-      }
-    ]
-  })
-}
-
-resource "aws_iam_policy" "lambda_sqs_policy" {
-  name        = "lambda-sqs-policy"
-  description = "Allow Lambda to send messages to SQS"
-  policy      = jsonencode({
-    Version = "2012-10-17",
-    Statement = [
-      {
-        Effect = "Allow",
-        Action = [
-          "sqs:SendMessage"
-        ],
-        Resource = aws_sqs_queue.payment_webhook_events.arn
-      }
-    ]
-  })
-}
-
-resource "aws_iam_role_policy_attachment" "lambda_policy_attachment" {
-  role       = aws_iam_role.lambda_exec_role.name
-  policy_arn = aws_iam_policy.lambda_sqs_policy.arn
 }
 
 resource "aws_lambda_function" "payment_webhook_lambda" {
   filename         = "../../SQSEnqueuePaymentWebhook/deployment.zip"
   function_name    = "paymentWebhookLambda"
-  role             = aws_iam_role.lambda_exec_role.arn
+  role             = data.aws_iam_role.lab_role.arn
   handler          = "main"
   runtime          = "provided.al2023"
   source_code_hash = filebase64sha256("../../SQSEnqueuePaymentWebhook/deployment.zip")
@@ -108,7 +73,9 @@ resource "aws_api_gateway_deployment" "payment_api_deployment" {
 }
 
 resource "aws_api_gateway_stage" "payment_api_stage" {
-  depends_on    = [aws_api_gateway_deployment.payment_api_deployment]
+  depends_on = [
+    aws_api_gateway_deployment.payment_api_deployment
+  ]
   deployment_id = aws_api_gateway_deployment.payment_api_deployment.id
   stage_name    = "prod"
   rest_api_id   = aws_api_gateway_rest_api.payment_api.id
