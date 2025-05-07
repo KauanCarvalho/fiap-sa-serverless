@@ -1,6 +1,6 @@
 output "api_url" {
   description = "Base URL of the deployed API Gateway"
-  value       = "https://${aws_api_gateway_rest_api.payment_api.id}.execute-api.${var.region}.amazonaws.com/prod/webhook_events"
+  value       = "https://${aws_api_gateway_rest_api.payment_api.id}.execute-api.${var.region}.amazonaws.com/${aws_api_gateway_stage.payment_api_stage.stage_name}/webhook_events"
 }
 
 output "lambda_function_name" {
