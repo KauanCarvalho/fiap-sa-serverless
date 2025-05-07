@@ -20,12 +20,12 @@ resource "aws_sqs_queue" "payment_webhook_events" {
 }
 
 resource "aws_lambda_function" "payment_webhook_lambda" {
-  filename         = "../../SQSEnqueuePaymentWebhook/lambda_sqs_enqueue_paymet_events.zip"
+  filename         = "../../SQSEnqueuePaymentWebhook/deployment.zip"
   function_name    = "paymentWebhookLambda"
   role             = var.lab_role
   handler          = "main"
   runtime          = "provided.al2"
-  source_code_hash = filebase64sha256("../../SQSEnqueuePaymentWebhook/lambda_sqs_enqueue_paymet_events.zip")
+  source_code_hash = filebase64sha256("../../SQSEnqueuePaymentWebhook/deployment.zip")
 
   environment {
     variables = {

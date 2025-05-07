@@ -26,7 +26,10 @@ func handler(ctx context.Context, req events.APIGatewayProxyRequest) (events.API
 
 	msg, err := json.Marshal(payload)
 	if err != nil {
-		return events.APIGatewayProxyResponse{StatusCode: 500}, nil
+		return events.APIGatewayProxyResponse{
+			StatusCode: 500,
+			Body:       "Failed to marshal message",
+		}, nil
 	}
 
 	sess := session.Must(session.NewSession())
@@ -36,10 +39,16 @@ func handler(ctx context.Context, req events.APIGatewayProxyRequest) (events.API
 		MessageBody: aws.String(string(msg)),
 	})
 	if err != nil {
-		return events.APIGatewayProxyResponse{StatusCode: 500}, nil
+		return events.APIGatewayProxyResponse{
+			StatusCode: 500,
+			Body:       "Failed to send message to SQS",
+		}, nil
 	}
 
-	return events.APIGatewayProxyResponse{StatusCode: 200}, nil
+	return events.APIGatewayProxyResponse{
+		StatusCode: 200,
+		Body:       "Message sent to SQS successfully",
+	}, nil
 }
 
 func main() {
