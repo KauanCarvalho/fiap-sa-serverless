@@ -1,6 +1,6 @@
 output "api_url" {
   description = "Base URL of the deployed API Gateway"
-  value       = "${aws_api_gateway_rest_api.payment_api.execution_arn}/${aws_api_gateway_stage.prod.stage_name}/webhook_events"
+  value       = "${aws_api_gateway_rest_api.payment_api.execution_arn}/webhook_events"
 }
 
 output "lambda_function_name" {
