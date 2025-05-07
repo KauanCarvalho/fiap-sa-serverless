@@ -19,43 +19,10 @@ resource "aws_sqs_queue" "payment_webhook_events" {
   name = "fiap_sa_payment_webhook_events"
 }
 
-resource "aws_iam_role" "lambda_exec_role" {
-  name = "lambda_exec_role"
-
-  assume_role_policy = jsonencode({
-    Version = "2012-10-17",
-    Statement = [
-      {
-        Effect = "Allow",
-        Principal = {
-          Service = "lambda.amazonaws.com"
-        },
-        Action = "sts:AssumeRole"
-      }
-    ]
-  })
-}
-
-resource "aws_iam_role_policy" "lambda_policy" {
-  name = "lambda_minimal_policy"
-  role = aws_iam_role.lambda_exec_role.id
-
-  policy = jsonencode({
-    Version = "2012-10-17",
-    Statement = [
-      {
-        Effect = "Allow",
-        Action = "sqs:SendMessage",
-        Resource = aws_sqs_queue.payment_webhook_events.arn
-      }
-    ]
-  })
-}
-
 resource "aws_lambda_function" "payment_webhook_lambda" {
   filename         = "lambda_sqs_enqueue_paymet_events.zip"
   function_name    = "paymentWebhookLambda"
-  role             = aws_iam_role.lambda_exec_role.arn
+  role             = var.lab_role
   handler          = "main"
   runtime          = "go1.x"
   source_code_hash = filebase64sha256("../../SQSEnqueuePaymentWebhook/lambda_sqs_enqueue_paymet_events.zip")
@@ -107,10 +74,4 @@ resource "aws_api_gateway_deployment" "payment_api_deployment" {
     aws_api_gateway_integration.lambda_integration
   ]
   rest_api_id = aws_api_gateway_rest_api.payment_api.id
-}
-
-resource "aws_api_gateway_stage" "prod" {
-  deployment_id = aws_api_gateway_deployment.payment_api_deployment.id
-  rest_api_id   = aws_api_gateway_rest_api.payment_api.id
-  stage_name    = "prod"
 }
