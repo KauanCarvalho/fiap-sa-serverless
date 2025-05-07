@@ -20,7 +20,7 @@ resource "aws_sqs_queue" "payment_webhook_events" {
 }
 
 resource "aws_lambda_function" "payment_webhook_lambda" {
-  filename         = "lambda_sqs_enqueue_paymet_events.zip"
+  filename         = "../../SQSEnqueuePaymentWebhook/lambda_sqs_enqueue_paymet_events.zip"
   function_name    = "paymentWebhookLambda"
   role             = var.lab_role
   handler          = "main"
