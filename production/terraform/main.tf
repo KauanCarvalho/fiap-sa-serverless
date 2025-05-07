@@ -1,6 +1,7 @@
 terraform {
   cloud {
     organization = "fiap-sa"
+
     workspaces {
       name = "fiap-sa-serverless"
     }
@@ -15,7 +16,7 @@ terraform {
 }
 
 provider "aws" {
-  region = var.aws_region
+  region = var.region
 }
 
 resource "aws_sqs_queue" "payment_webhook_events" {
@@ -73,7 +74,7 @@ resource "aws_iam_role_policy" "lambda_sqs_policy" {
 
 resource "aws_api_gateway_rest_api" "payment_api" {
   name        = "payment-webhook-api"
-  description = "API Gateway for Payment Webhook"
+  description = "API Gateway for Payment Webhook (⚠️ Público por padrão)"
 }
 
 resource "aws_api_gateway_resource" "webhook_events" {
@@ -86,16 +87,16 @@ resource "aws_api_gateway_method" "post_webhook_events" {
   rest_api_id   = aws_api_gateway_rest_api.payment_api.id
   resource_id   = aws_api_gateway_resource.webhook_events.id
   http_method   = "POST"
-  authorization = "NONE"
+  authorization = "NONE" # ⚠️ Expõe o endpoint publicamente
 }
 
 resource "aws_api_gateway_integration" "lambda_integration" {
-  rest_api_id = aws_api_gateway_rest_api.payment_api.id
-  resource_id = aws_api_gateway_resource.webhook_events.id
-  http_method = aws_api_gateway_method.post_webhook_events.http_method
+  rest_api_id             = aws_api_gateway_rest_api.payment_api.id
+  resource_id             = aws_api_gateway_resource.webhook_events.id
+  http_method             = aws_api_gateway_method.post_webhook_events.http_method
   integration_http_method = "POST"
-  type = "AWS_PROXY"
-  uri  = "arn:aws:apigateway:${var.aws_region}:lambda:path/2015-03-31/functions/${aws_lambda_function.payment_webhook_lambda.arn}/invocations"
+  type                    = "AWS_PROXY"
+  uri                     = "arn:aws:apigateway:${var.region}:lambda:path/2015-03-31/functions/${aws_lambda_function.payment_webhook_lambda.arn}/invocations"
 }
 
 resource "aws_lambda_permission" "allow_api_gateway" {
@@ -110,9 +111,10 @@ resource "aws_api_gateway_deployment" "payment_api_deployment" {
     aws_api_gateway_integration.lambda_integration
   ]
   rest_api_id = aws_api_gateway_rest_api.payment_api.id
-  stage_name  = "prod"
 }
 
-output "api_url" {
-  value = "https://${aws_api_gateway_rest_api.payment_api.id}.execute-api.${var.aws_region}.amazonaws.com/prod/webhook_events"
+resource "aws_api_gateway_stage" "prod" {
+  deployment_id = aws_api_gateway_deployment.payment_api_deployment.id
+  rest_api_id   = aws_api_gateway_rest_api.payment_api.id
+  stage_name    = "prod"
 }
