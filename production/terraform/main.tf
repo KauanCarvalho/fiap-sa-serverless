@@ -24,7 +24,7 @@ resource "aws_lambda_function" "payment_webhook_lambda" {
   function_name    = "paymentWebhookLambda"
   role             = var.lab_role
   handler          = "main"
-  runtime          = "go1.x"
+  runtime          = "provided.al2"
   source_code_hash = filebase64sha256("../../SQSEnqueuePaymentWebhook/lambda_sqs_enqueue_paymet_events.zip")
 
   environment {
