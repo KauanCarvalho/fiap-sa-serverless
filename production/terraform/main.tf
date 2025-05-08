@@ -23,6 +23,23 @@ resource "aws_sqs_queue" "payment_webhook_events" {
   name = "fiap_sa_payment_webhook_events"
 }
 
+resource "aws_sqs_queue_policy" "allow_lambda" {
+  queue_url = aws_sqs_queue.payment_webhook_events.id
+
+  policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [
+      {
+        Sid      = "AllowLambdaSendMessage",
+        Effect   = "Allow",
+        Principal = "*",
+        Action   = "sqs:SendMessage",
+        Resource = aws_sqs_queue.payment_webhook_events.arn
+      }
+    ]
+  })
+}
+
 resource "aws_lambda_function" "payment_webhook_lambda" {
   filename         = "../../SQSEnqueuePaymentWebhook/deployment.zip"
   function_name    = "paymentWebhookLambda"
