@@ -50,7 +50,7 @@ resource "aws_lambda_function" "payment_webhook_lambda" {
 
   environment {
     variables = {
-      QUEUE_URL = aws_sqs_queue.payment_webhook_events.id
+      PAYMENT_WEBHOOK_QUEUE_URL = aws_sqs_queue.payment_webhook_events.id
     }
   }
 }
