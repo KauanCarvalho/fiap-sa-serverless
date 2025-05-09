@@ -20,7 +20,7 @@ data "aws_iam_role" "lab_role" {
 }
 
 resource "aws_sqs_queue" "payment_webhook_events" {
-  name = "fiap_sa_payment_webhook_events"
+  name = "fiap_sa_payment_service_webhook_events"
 }
 
 resource "aws_sqs_queue_policy" "allow_lambda" {
