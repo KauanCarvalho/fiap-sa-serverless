@@ -5,16 +5,16 @@ ZIP_FILE=deployment.zip
 WEBHOOK_LAMBDA_FOLDER=SQSEnqueuePaymentWebhook
 SOURCE_FILE=main.go
 
-.PHONY: help build-webhook zip-webhook test-prod
+.PHONY: help build-webhook zip-webhook test-webhook-api-gateway
 .DEFAULT_GOAL := help
 
 help:
 	@echo ""
 	@echo "Available commands:"
-	@echo "  make help            # Show this help message"
-	@echo "  make build-webhook   # Build the Webhook Lambda function"
-	@echo "  make zip-webhook     # Zip the Webhook Lambda function for deployment"
-	@echo "  make test-prod       # Run tests against the Webhook API in production"
+	@echo "  make help                      # Show this help message"
+	@echo "  make build-webhook             # Build the Webhook Lambda function"
+	@echo "  make zip-webhook               # Zip the Webhook Lambda function for deployment"
+	@echo "  make test-webhook-api-gateway  # Run tests against the Webhook API in production"
 	@echo ""
 
 build-webhook:
@@ -27,11 +27,6 @@ zip-webhook: build-webhook
 	@echo "Zipping the Webhook Lambda function..."
 	zip $(WEBHOOK_LAMBDA_FOLDER)/$(ZIP_FILE) $(WEBHOOK_LAMBDA_FOLDER)/$(LAMBDA_BINARY)
 
-test-prod:
+test-webhook-api-gateway:
 	@echo "Testing the Webhook API..."
-	@if [ -z "$(WEBHOOK_URL)" ]; then \
-		echo "Please provide the WEBHOOK_URL parameter"; \
-		exit 1; \
-	fi
-	@echo "Testing Webhook at $(WEBHOOK_URL)..."
-	./test/test-webhook.sh $(WEBHOOK_URL)
+	./test/test-webhook.sh $(filter-out $@,$(MAKECMDGOALS))
