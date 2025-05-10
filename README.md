@@ -7,20 +7,20 @@ Abaixo está o diagrama representando a comunicação entre os principais compon
 ```mermaid
 flowchart TD
   subgraph API_Gateway["API Gateway"]
-    POST_Webhook[("POST - /prod/webhook_events")]
+    POST_Webhook(["POST - /prod/webhook_events"])
   end
 
   subgraph Lambda["Lambda"]
-    SQSEnqueuePaymentWebhook[("SQSEnqueuePaymentWebhook")]
+    SQSEnqueuePaymentWebhook(["SQSEnqueuePaymentWebhook"])
   end
 
   subgraph Messaging_Layer["Messaging Layer"]
-    SQS_Payment["Queue: fiap_sa_payment_service_webhook_events"]
+    SQS_Payment{{Queue: fiap_sa_payment_service_webhook_events}}
   end
 
   subgraph Services["Services"]
     subgraph Payment["fiap-sa-payment-service"]
-      Payment_Worker[("Worker")]
+      Payment_Worker["Worker"]
     end
   end
 
