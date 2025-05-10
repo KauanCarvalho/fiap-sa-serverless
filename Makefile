@@ -10,7 +10,7 @@ SOURCE_FILE=main.go
 
 help:
 	@echo ""
-	@echo "Available commands:"
+	@echo "Available targets:"
 	@echo "  make help                      # Show this help message"
 	@echo "  make build-webhook             # Build the Webhook Lambda function"
 	@echo "  make zip-webhook               # Zip the Webhook Lambda function for deployment"
