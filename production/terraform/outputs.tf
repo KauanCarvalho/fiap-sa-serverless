@@ -12,3 +12,7 @@ output "sqs_queue_url" {
   description = "SQS queue URL"
   value       = aws_sqs_queue.payment_webhook_events.id
 }
+
+output "user_auth_api_url" {
+  value = "${aws_api_gateway_rest_api.order_api.id}/prod"
+}
