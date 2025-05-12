@@ -12,3 +12,15 @@ output "sqs_queue_url" {
   description = "SQS queue URL"
   value       = aws_sqs_queue.payment_webhook_events.id
 }
+
+output "api_endpoint" {
+  value = aws_apigatewayv2_api.api.api_endpoint
+}
+
+output "user_pool_id" {
+  value = aws_cognito_user_pool.user_pool.id
+}
+
+output "user_pool_client_id" {
+  value = aws_cognito_user_pool_client.client.id
+}
