@@ -4,6 +4,7 @@ LAMBDA_BINARY=bootstrap
 ZIP_FILE=deployment.zip
 WEBHOOK_LAMBDA_FOLDER=SQSEnqueuePaymentWebhook
 USER_AUTH_LAMBDA_FOLDER=UserAuth
+USER_LOGIN_LAMBDA_FOLDER=UserLogin
 SOURCE_FILE=main.go
 
 .PHONY: help build-webhook zip-webhook test-webhook-api-gateway
@@ -30,6 +31,12 @@ build-user-auth:
 	GOARCH=$(GOARCH) GOOS=$(GOOS) go build -o $(LAMBDA_BINARY) $(SOURCE_FILE) && \
 	cd ..
 
+build-user-login:
+	@echo "Building the UserLogin Lambda function..."
+	cd $(USER_LOGIN_LAMBDA_FOLDER) && \
+	GOARCH=$(GOARCH) GOOS=$(GOOS) go build -o $(LAMBDA_BINARY) $(SOURCE_FILE) && \
+	cd ..
+
 zip-webhook: build-webhook
 	@echo "Zipping the Webhook Lambda function..."
 	zip $(WEBHOOK_LAMBDA_FOLDER)/$(ZIP_FILE) $(WEBHOOK_LAMBDA_FOLDER)/$(LAMBDA_BINARY)
@@ -37,6 +44,12 @@ zip-webhook: build-webhook
 zip-user-auth: build-user-auth
 	@echo "Zipping the UserAuth Lambda function..."
 	cd $(USER_AUTH_LAMBDA_FOLDER) && \
+	zip $(ZIP_FILE) $(LAMBDA_BINARY) && \
+	cd ..
+
+zip-user-login: build-user-login
+	@echo "Zipping the UserLogin Lambda function..."
+	cd $(USER_LOGIN_LAMBDA_FOLDER) && \
 	zip $(ZIP_FILE) $(LAMBDA_BINARY) && \
 	cd ..
 
