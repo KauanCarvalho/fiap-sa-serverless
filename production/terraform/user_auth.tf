@@ -51,8 +51,8 @@ resource "aws_lambda_function" "signup_lambda" {
 
   environment {
     variables = {
-      USER_POOL_ID       = aws_cognito_user_pool.user_pool.id
-      COGNITO_CLIENT_ID  = aws_cognito_user_pool_client.client.id
+      COGNITO_USER_POOL_ID = aws_cognito_user_pool.user_pool.id
+      COGNITO_CLIENT_ID    = aws_cognito_user_pool_client.client.id
     }
   }
 }
@@ -67,8 +67,8 @@ resource "aws_lambda_function" "login_lambda" {
 
   environment {
     variables = {
-      USER_POOL_ID       = aws_cognito_user_pool.user_pool.id
-      COGNITO_CLIENT_ID  = aws_cognito_user_pool_client.client.id
+      COGNITO_USER_POOL_ID = aws_cognito_user_pool.user_pool.id
+      COGNITO_CLIENT_ID    = aws_cognito_user_pool_client.client.id
     }
   }
 }

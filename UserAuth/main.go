@@ -30,8 +30,9 @@ func handler(ctx context.Context, request events.APIGatewayV2HTTPRequest) (event
 	svc := cognitoidentityprovider.New(sess)
 
 	clientID := os.Getenv("COGNITO_CLIENT_ID")
+	userPoolID := os.Getenv("COGNITO_USER_POOL_ID")
 
-	input := &cognitoidentityprovider.SignUpInput{
+	signupInput := &cognitoidentityprovider.SignUpInput{
 		ClientId: aws.String(clientID),
 		Username: aws.String(signupReq.CPF),
 		Password: aws.String(signupReq.Password),
@@ -43,15 +44,26 @@ func handler(ctx context.Context, request events.APIGatewayV2HTTPRequest) (event
 		},
 	}
 
-	_, err := svc.SignUp(input)
+	_, err := svc.SignUp(signupInput)
 	if err != nil {
 		log.Println("Signup failed:", err)
 		return events.APIGatewayV2HTTPResponse{StatusCode: http.StatusInternalServerError, Body: fmt.Sprintf("Signup error: %s", err.Error())}, nil
 	}
 
+	confirmInput := &cognitoidentityprovider.AdminConfirmSignUpInput{
+		UserPoolId: aws.String(userPoolID),
+		Username:   aws.String(signupReq.CPF),
+	}
+
+	_, err = svc.AdminConfirmSignUp(confirmInput)
+	if err != nil {
+		log.Println("Admin confirm signup failed:", err)
+		return events.APIGatewayV2HTTPResponse{StatusCode: http.StatusInternalServerError, Body: fmt.Sprintf("Confirm signup error: %s", err.Error())}, nil
+	}
+
 	return events.APIGatewayV2HTTPResponse{
 		StatusCode: http.StatusOK,
-		Body:       "User signed up successfully",
+		Body:       "User signed up and confirmed successfully",
 	}, nil
 }
 
