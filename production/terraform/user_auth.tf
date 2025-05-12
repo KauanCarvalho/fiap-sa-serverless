@@ -15,6 +15,14 @@ resource "aws_cognito_user_pool" "user_pool" {
     }
   }
 
+  schema {
+    name                     = "client_id"
+    attribute_data_type      = "String"
+    developer_only_attribute = false
+    mutable                  = true
+    required                 = false
+  }
+
   password_policy {
     minimum_length    = 8
     require_uppercase = true
@@ -53,6 +61,7 @@ resource "aws_lambda_function" "signup_lambda" {
     variables = {
       COGNITO_USER_POOL_ID = aws_cognito_user_pool.user_pool.id
       COGNITO_CLIENT_ID    = aws_cognito_user_pool_client.client.id
+      API_URL              = var.order_service_url
     }
   }
 }
