@@ -1,5 +1,7 @@
 # FiAP SA Serverless Architecture
 
+[Vídeo no youtube da fase 4](https://youtu.be/DnscHNmON-A).
+
 ## 🌐 Represetação da comunicação entre os serviços
 
 Abaixo está o diagrama representando a comunicação entre os principais componentes da arquitetura (Lambda, API Gateway e SQS).
