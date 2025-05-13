@@ -49,6 +49,7 @@ flowchart TD
   POST_Checkout --> CheckoutHandler
   CheckoutHandler --> Cognito
   CheckoutHandler --> Order_API
+```
 
 Este repositório descreve a infraestrutura e o código da função **Lambda** responsável por processar eventos de Webhook no serviço de pagamentos, com integração ao **API Gateway** e filas **SQS** para orquestração de mensagens. A infraestrutura é gerida com **Terraform** e a função Lambda é escrita em [GO](./SQSEnqueuePaymentWebhook/main.go).
 
