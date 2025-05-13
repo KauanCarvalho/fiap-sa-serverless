@@ -119,7 +119,7 @@ random_sku="${skus[RANDOM % ${#skus[@]}]}"
 
 # Create orders for both users
 echo "Creating order for user 1..."
-response=$(curl -s -w "\n%{http_code}" -X POST "https://fzfkf1tl2g.execute-api.us-east-1.amazonaws.com/checkout" \
+response=$(curl -s -w "\n%{http_code}" -X POST "$base_url/checkout" \
   -H "Content-Type: application/json" \
   -H "Authorization: $user1_access_token" \
   -d '{
@@ -143,7 +143,7 @@ echo "---------------------------------------------"
 random_sku="${skus[RANDOM % ${#skus[@]}]}"
 
 echo "Creating order for user 2..."
-response=$(curl -s -w "\n%{http_code}" -X POST "https://fzfkf1tl2g.execute-api.us-east-1.amazonaws.com/checkout" \
+response=$(curl -s -w "\n%{http_code}" -X POST "$base_url/checkout" \
   -H "Content-Type: application/json" \
   -H "Authorization: $user2_access_token" \
   -d '{
