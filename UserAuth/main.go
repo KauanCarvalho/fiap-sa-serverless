@@ -66,10 +66,28 @@ func handler(ctx context.Context, request events.APIGatewayV2HTTPRequest) (event
 		return events.APIGatewayV2HTTPResponse{StatusCode: http.StatusInternalServerError, Body: fmt.Sprintf("Confirm signup error: %s", err.Error())}, nil
 	}
 
+	userResp, err := svc.AdminGetUser(&cognitoidentityprovider.AdminGetUserInput{
+		UserPoolId: aws.String(userPoolID),
+		Username:   aws.String(signupReq.CPF),
+	})
+	if err != nil {
+		deleteUser(svc, userPoolID, signupReq.CPF)
+		return events.APIGatewayV2HTTPResponse{StatusCode: http.StatusInternalServerError, Body: "Failed to retrieve Cognito user info"}, nil
+	}
+
+	var cognitoID string
+	for _, attr := range userResp.UserAttributes {
+		if *attr.Name == "sub" {
+			cognitoID = *attr.Value
+			break
+		}
+	}
+
 	apiURL := os.Getenv("API_URL")
 	clientData := map[string]string{
-		"name": signupReq.CPF,
-		"cpf":  signupReq.CPF,
+		"name":       signupReq.CPF,
+		"cpf":        signupReq.CPF,
+		"cognito_id": cognitoID,
 	}
 
 	clientJSON, _ := json.Marshal(clientData)
@@ -85,7 +103,7 @@ func handler(ctx context.Context, request events.APIGatewayV2HTTPRequest) (event
 	resp, err := client.Do(req)
 	if err != nil {
 		deleteUser(svc, userPoolID, signupReq.CPF)
-		return events.APIGatewayV2HTTPResponse{StatusCode: http.StatusInternalServerError, Body: "API call failed"}, nil
+		return events.APIGatewayV2HTTPResponse{StatusCode: http.StatusInternalServerError, Body: err.Error()}, nil
 	}
 	defer resp.Body.Close()
 
@@ -94,32 +112,9 @@ func handler(ctx context.Context, request events.APIGatewayV2HTTPRequest) (event
 		return events.APIGatewayV2HTTPResponse{StatusCode: resp.StatusCode, Body: "API call failed to create client"}, nil
 	}
 
-	var clientResp ClientResponse
-	if err := json.NewDecoder(resp.Body).Decode(&clientResp); err != nil {
-		deleteUser(svc, userPoolID, signupReq.CPF)
-		return events.APIGatewayV2HTTPResponse{StatusCode: http.StatusInternalServerError, Body: "Error parsing client data"}, nil
-	}
-
-	updateInput := &cognitoidentityprovider.AdminUpdateUserAttributesInput{
-		UserPoolId: aws.String(userPoolID),
-		Username:   aws.String(signupReq.CPF),
-		UserAttributes: []*cognitoidentityprovider.AttributeType{
-			{
-				Name:  aws.String("custom:client_id"),
-				Value: aws.String(fmt.Sprintf("%d", clientResp.ID)),
-			},
-		},
-	}
-
-	_, err = svc.AdminUpdateUserAttributes(updateInput)
-	if err != nil {
-		deleteUser(svc, userPoolID, signupReq.CPF)
-		return events.APIGatewayV2HTTPResponse{StatusCode: http.StatusInternalServerError, Body: fmt.Sprintf("Failed to update user with client ID: %s", err.Error())}, nil
-	}
-
 	return events.APIGatewayV2HTTPResponse{
 		StatusCode: http.StatusOK,
-		Body:       "User signed up and client ID added successfully",
+		Body:       "User signed up and client created successfully",
 	}, nil
 }
 

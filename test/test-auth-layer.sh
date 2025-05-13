@@ -5,8 +5,17 @@ command -v uuidgen >/dev/null 2>&1 || { echo >&2 "uuidgen is required but not in
 command -v jq >/dev/null 2>&1 || { echo >&2 "jq is required but not installed. Aborting."; exit 1; }
 
 base_url=$1
+shift
+skus=("$@")
+
 if [ -z "$base_url" ]; then
   echo "Usage: $0 <base_url>"
+  exit 1
+fi
+
+if [ ${#skus[@]} -eq 0 ]; then
+  echo "Error: You must provide at least one SKU."
+  echo "Usage: $0 <base_url> <sku1> <sku2> ..."
   exit 1
 fi
 
@@ -82,7 +91,7 @@ response=$(curl -s -w "\n%{http_code}" -X POST "$base_url/login" \
 body=$(echo "$response" | sed '$d')
 status_code=$(echo "$response" | tail -n1)
 
-user1_token=$(echo "$body" | jq -r '.token')
+user1_access_token=$(echo "$body" | jq -r '.access_token')
 
 echo -n "Status: "
 print_status_code "$status_code"
@@ -97,7 +106,56 @@ response=$(curl -s -w "\n%{http_code}" -X POST "$base_url/login" \
 body=$(echo "$response" | sed '$d')
 status_code=$(echo "$response" | tail -n1)
 
-user2_token=$(echo "$body" | jq -r '.token')
+user2_access_token=$(echo "$body" | jq -r '.access_token')
+
+echo -n "Status: "
+print_status_code "$status_code"
+echo "Response body:"
+print_pretty_body "$body"
+echo "---------------------------------------------"
+
+# Randomly select an SKU from the list
+random_sku="${skus[RANDOM % ${#skus[@]}]}"
+
+# Create orders for both users
+echo "Creating order for user 1..."
+response=$(curl -s -w "\n%{http_code}" -X POST "https://fzfkf1tl2g.execute-api.us-east-1.amazonaws.com/checkout" \
+  -H "Content-Type: application/json" \
+  -H "Authorization: $user1_access_token" \
+  -d '{
+    "items": [
+      {
+        "sku": "'"$random_sku"'",
+        "quantity": 1
+      }
+    ]
+  }')
+body=$(echo "$response" | sed '$d')
+status_code=$(echo "$response" | tail -n1)
+
+echo -n "Status: "
+print_status_code "$status_code"
+echo "Response body:"
+print_pretty_body "$body"
+echo "---------------------------------------------"
+
+# Create another order for user 2 with a new random SKU
+random_sku="${skus[RANDOM % ${#skus[@]}]}"
+
+echo "Creating order for user 2..."
+response=$(curl -s -w "\n%{http_code}" -X POST "https://fzfkf1tl2g.execute-api.us-east-1.amazonaws.com/checkout" \
+  -H "Content-Type: application/json" \
+  -H "Authorization: $user2_access_token" \
+  -d '{
+    "items": [
+      {
+        "sku": "'"$random_sku"'",
+        "quantity": 1
+      }
+    ]
+  }')
+body=$(echo "$response" | sed '$d')
+status_code=$(echo "$response" | tail -n1)
 
 echo -n "Status: "
 print_status_code "$status_code"
